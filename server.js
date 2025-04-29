@@ -38,6 +38,8 @@ const dados = async (pagina) => {
 
   const data = await d.json()
 
+  console.log(data)
+
   return data // imprime os dados
 }
 
@@ -74,7 +76,7 @@ const all_Camps = async () => {
 
   const uniq = campUniq(camps)
 
-  // console.log(uniq)
+  console.log(uniq)
 
   dados2(uniq)
 }
@@ -124,7 +126,7 @@ const dados2 = async (campaign) => {
     await delay(1000)
   }
   // console.log("Custo")
-  // console.log(fullData)
+  console.log(fullData)
   // enviarParaSheets()
   dados_Cartpanda()
 }
@@ -204,7 +206,7 @@ const dados_Cartpanda = async (pagina) => {
   }))
 
   // console.log("Lucro")
-  // console.log(uniqueResult)
+  console.log(uniqueResult)
   // return resultado
 
   // Mapeia os totais por "camp"
@@ -247,7 +249,7 @@ const dados_Cartpanda = async (pagina) => {
 
   // console.log("fim")
 
-  // console.log(resultado)
+  console.log(resultado)
   // enviarParaSheets(resultado)
 
   const resultOffer = Object.values(
@@ -284,7 +286,7 @@ const dados_Cartpanda = async (pagina) => {
     })
   }
 
-  // console.log(completo)
+  console.log(completo)
 
   enviarParaSheets()
 }
