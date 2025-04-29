@@ -844,8 +844,8 @@ async function enviarParaSheets(resultado) {
 const cron = require("node-cron")
 
 // cron.schedule("0 * * * *", () => {
-// cron.schedule("* * * * *", () => {
-cron.schedule("*/5 * * * *", () => {
+cron.schedule("* * * * *", () => {
+  // cron.schedule("*/5 * * * *", () => {
   all_Camps()
 
   agora = new Date()
