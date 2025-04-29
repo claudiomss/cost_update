@@ -317,7 +317,8 @@ const getCostACM = async (n) => {
 
 // 🔑 Substitua pelo caminho para o seu arquivo JSON da chave
 const auth = new google.auth.GoogleAuth({
-  keyFile: "service.json",
+  keyFile: "/root/up/service.json",
+  // keyFile: "service.json",
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 })
 
