@@ -343,7 +343,7 @@ const port = process.env.PORT || 3000
 
 app.get("/", async (req, res) => {
   try {
-    await all_Camps() // faltava também o await, supondo que all_Camps seja assíncria
+    await all_Camps()
     res.status(200).json({
       message: "Sucesso!",
     })
