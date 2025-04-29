@@ -22,12 +22,12 @@ function formatHora(date) {
   return `${horas}:${minutos}`
 }
 
-const agora = new Date()
-const umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000)
+let agora = new Date()
+let umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000)
 
-const horaAtual = setData + "+" + formatHora(agora)
-const horaAnterior = setData + "+" + formatHora(umaHoraAtras)
-const horaRange = formatHora(umaHoraAtras) + "-" + formatHora(agora)
+let horaAtual = setData + "+" + formatHora(agora)
+let horaAnterior = setData + "+" + formatHora(umaHoraAtras)
+let horaRange = formatHora(umaHoraAtras) + "-" + formatHora(agora)
 
 let camps = []
 
@@ -37,8 +37,6 @@ const dados = async (pagina) => {
   )
 
   const data = await d.json()
-
-  console.log(data)
 
   return data // imprime os dados
 }
@@ -76,7 +74,7 @@ const all_Camps = async () => {
 
   const uniq = campUniq(camps)
 
-  console.log(uniq)
+  // console.log(uniq)
 
   dados2(uniq)
 }
@@ -123,17 +121,17 @@ const dados2 = async (campaign) => {
       cost: data.total.cost,
     })
 
-    await delay(1000)
+    await delay(1200)
   }
   // console.log("Custo")
-  console.log(fullData)
+  // console.log(fullData)
   // enviarParaSheets()
   dados_Cartpanda()
 }
 
 let dados_cart = []
 let completo = []
-let conv = 0
+// let conv = 0
 
 const dados_Cartpanda = async (pagina) => {
   const d = await fetch(
@@ -162,6 +160,7 @@ const dados_Cartpanda = async (pagina) => {
             camp: trk.parameter_value,
             valor: conv.subtotal_price,
             faturamento: conv.total_price,
+            conv: 1,
           })
         }
       }
@@ -169,6 +168,9 @@ const dados_Cartpanda = async (pagina) => {
   }
 
   conv = dados_cart.length
+
+  // console.log(dados_cart)
+  // console.log(conv)
 
   const uniqueResult = Object.values(
     dados_cart.reduce((acc, item) => {
@@ -185,11 +187,12 @@ const dados_Cartpanda = async (pagina) => {
       )
 
       if (!acc[key]) {
-        acc[key] = { camp: key, total: 0, faturamento: 0 }
+        acc[key] = { camp: key, total: 0, faturamento: 0, conv: 0 }
       }
 
       acc[key].total += valorNumerico
       acc[key].faturamento += faturamentoNumerico
+      acc[key].conv += 1
 
       return acc
     }, {})
@@ -206,12 +209,18 @@ const dados_Cartpanda = async (pagina) => {
   }))
 
   // console.log("Lucro")
-  console.log(uniqueResult)
+  // console.log(uniqueResult)
   // return resultado
 
   // Mapeia os totais por "camp"
   const mapTotais = new Map()
   const mapFaturamento = new Map()
+  const mapConv = new Map()
+
+  uniqueResult.forEach((item) => {
+    const currentConv = mapConv.get(item.camp) || 0
+    mapConv.set(item.camp, currentConv + item.conv)
+  })
 
   uniqueResult.forEach((item) => {
     mapTotais.set(item.camp, item.total)
@@ -245,11 +254,12 @@ const dados_Cartpanda = async (pagina) => {
     faturamento: parseBR(mapFaturamento.get(item.camp)) || 0,
     total: parseBR(mapTotais.get(item.camp)) || 0,
     lucro: parseBR(mapTotais.get(item.camp)) - item.cost,
+    conv: mapConv.get(item.camp) || 0,
   }))
 
   // console.log("fim")
 
-  console.log(resultado)
+  // console.log(resultado)
   // enviarParaSheets(resultado)
 
   const resultOffer = Object.values(
@@ -261,12 +271,14 @@ const dados_Cartpanda = async (pagina) => {
           total: 0,
           faturamento: 0,
           lucro: 0,
+          conv: 0,
         }
       }
       acc[item.offer].cost += item.cost
       acc[item.offer].total += item.total
       acc[item.offer].faturamento += item.faturamento
       acc[item.offer].lucro += item.lucro
+      acc[item.offer].conv += item.conv
       return acc
     }, {})
   )
@@ -283,10 +295,13 @@ const dados_Cartpanda = async (pagina) => {
       faturamento: oferta.faturamento,
       liquido: oferta.total,
       lucro: oferta.lucro,
+      conv: oferta.conv,
     })
+
+    await delay(1200)
   }
 
-  console.log(completo)
+  // console.log(completo)
 
   enviarParaSheets()
 }
@@ -306,51 +321,542 @@ const auth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 })
 
+// async function enviarParaSheets(resultado) {
+//   const client = await auth.getClient()
+//   const sheets = google.sheets({ version: "v4", auth: client })
+
+//   const spreadsheetId = "1mfu0Tezwxp4A0v1XUKI4tk48HEeK69WKu6MbnQyv0w0" // copie da URL da planilha
+//   const range = "Página1!A2:D" // ou o nome da sua aba e intervalo desejado
+
+//   const values = completo.map((d) => [
+//     setData,
+//     horaRange,
+//     d.offer,
+//     // d.camp,
+//     d.custo_completo,
+//     d.custo_30min,
+//     d.faturamento,
+//     d.liquido,
+//     d.lucro,
+//     conv,
+//   ])
+
+//   await sheets.spreadsheets.values.append({
+//     spreadsheetId,
+//     range,
+//     valueInputOption: "RAW",
+//     requestBody: {
+//       values,
+//     },
+//   })
+
+//   console.log("Dados inseridos com sucesso!")
+// }
+
+// async function enviarParaSheets(resultado) {
+//   const client = await auth.getClient()
+//   const sheets = google.sheets({ version: "v4", auth: client })
+
+//   const spreadsheetId = "1mfu0Tezwxp4A0v1XUKI4tk48HEeK69WKu6MbnQyv0w0"
+//   const { data: sheetData } = await sheets.spreadsheets.get({ spreadsheetId })
+
+//   const existingSheets = sheetData.sheets.map((s) => s.properties.title)
+
+//   for (const d of completo) {
+//     const sheetName = d.offer
+
+//     // Se a aba não existir, crie
+//     if (!existingSheets.includes(sheetName)) {
+//       await sheets.spreadsheets.batchUpdate({
+//         spreadsheetId,
+//         requestBody: {
+//           requests: [
+//             {
+//               addSheet: {
+//                 properties: {
+//                   title: sheetName,
+//                 },
+//               },
+//             },
+//           ],
+//         },
+//       })
+
+//       console.log(`Aba "${sheetName}" criada.`)
+//     }
+
+//     // Escreve os dados na aba correspondente
+//     const values = [
+//       [
+//         setData,
+//         horaRange,
+//         d.offer,
+//         d.custo_completo,
+//         d.custo_30min,
+//         d.faturamento,
+//         d.liquido,
+//         d.lucro,
+//         conv,
+//       ],
+//     ]
+
+//     await sheets.spreadsheets.values.append({
+//       spreadsheetId,
+//       range: `${sheetName}!A2`, // A2 para não sobrescrever cabeçalhos, se houver
+//       valueInputOption: "RAW",
+//       requestBody: {
+//         values,
+//       },
+//     })
+
+//     console.log(`Dados adicionados na aba "${sheetName}".`)
+//   }
+// }
+
+// async function enviarParaSheets(resultado) {
+//   const client = await auth.getClient()
+//   const sheets = google.sheets({ version: "v4", auth: client })
+
+//   const spreadsheetId = "1mfu0Tezwxp4A0v1XUKI4tk48HEeK69WKu6MbnQyv0w0"
+//   const { data: sheetData } = await sheets.spreadsheets.get({ spreadsheetId })
+//   const existingSheets = sheetData.sheets.map((s) => s.properties.title)
+
+//   const headers = [
+//     "Data",
+//     "Hora",
+//     "Oferta",
+//     "Custo_ACM",
+//     "Custo_1hr",
+//     "Faturamento",
+//     "Líquido",
+//     "Lucro",
+//     "Conversão",
+//   ]
+
+//   for (const d of completo) {
+//     const sheetName = d.offer
+
+//     if (!existingSheets.includes(sheetName)) {
+//       const addSheetRes = await sheets.spreadsheets.batchUpdate({
+//         spreadsheetId,
+//         requestBody: {
+//           requests: [
+//             {
+//               addSheet: {
+//                 properties: {
+//                   title: sheetName,
+//                 },
+//               },
+//             },
+//           ],
+//         },
+//       })
+
+//       const sheetId = addSheetRes.data.replies[0].addSheet.properties.sheetId
+
+//       // Define cabeçalhos com negrito e alinhamento central
+//       await sheets.spreadsheets.batchUpdate({
+//         spreadsheetId,
+//         requestBody: {
+//           requests: [
+//             {
+//               updateCells: {
+//                 rows: [
+//                   {
+//                     values: headers.map((text) => ({
+//                       userEnteredValue: { stringValue: text },
+//                       userEnteredFormat: {
+//                         textFormat: { bold: true },
+//                         horizontalAlignment: "CENTER",
+//                       },
+//                     })),
+//                   },
+//                 ],
+//                 fields:
+//                   "userEnteredValue,userEnteredFormat(textFormat,horizontalAlignment)",
+//                 start: {
+//                   sheetId,
+//                   rowIndex: 0,
+//                   columnIndex: 0,
+//                 },
+//               },
+//             },
+//             {
+//               // Aplica alinhamento central para uma área ampla (A1:I1000)
+//               repeatCell: {
+//                 range: {
+//                   sheetId,
+//                   startRowIndex: 0,
+//                   endRowIndex: 1000,
+//                   startColumnIndex: 0,
+//                   endColumnIndex: 9,
+//                 },
+//                 cell: {
+//                   userEnteredFormat: {
+//                     horizontalAlignment: "CENTER",
+//                   },
+//                 },
+//                 fields: "userEnteredFormat.horizontalAlignment",
+//               },
+//             },
+//           ],
+//         },
+//       })
+
+//       console.log(
+//         `Aba "${sheetName}" criada com cabeçalhos e alinhamento central.`
+//       )
+//     }
+
+//     const values = [
+//       [
+//         setData,
+//         horaRange,
+//         d.offer,
+//         d.custo_completo,
+//         d.custo_30min,
+//         d.faturamento,
+//         d.liquido,
+//         d.lucro,
+//         conv,
+//       ],
+//     ]
+
+//     await sheets.spreadsheets.values.append({
+//       spreadsheetId,
+//       range: `${sheetName}!A2`,
+//       valueInputOption: "RAW",
+//       requestBody: {
+//         values,
+//       },
+//     })
+
+//     console.log(`Dados adicionados na aba "${sheetName}".`)
+//   }
+// }
+
+// async function enviarParaSheets(resultado) {
+//   const client = await auth.getClient()
+//   const sheets = google.sheets({ version: "v4", auth: client })
+
+//   const spreadsheetId = "1mfu0Tezwxp4A0v1XUKI4tk48HEeK69WKu6MbnQyv0w0"
+//   const { data: sheetData } = await sheets.spreadsheets.get({ spreadsheetId })
+//   const existingSheets = sheetData.sheets.map((s) => s.properties.title)
+
+//   const headers = [
+//     "Data",
+//     "Hora",
+//     "Oferta",
+//     "Custo_ACM",
+//     "Custo_1hr",
+//     "Faturamento",
+//     "Líquido",
+//     "Lucro",
+//     "Conversão",
+//   ]
+
+//   for (const d of completo) {
+//     const sheetName = d.offer
+
+//     // Cria a aba se necessário
+//     if (!existingSheets.includes(sheetName)) {
+//       const addSheetRes = await sheets.spreadsheets.batchUpdate({
+//         spreadsheetId,
+//         requestBody: {
+//           requests: [
+//             {
+//               addSheet: {
+//                 properties: {
+//                   title: sheetName,
+//                 },
+//               },
+//             },
+//           ],
+//         },
+//       })
+
+//       const sheetId = addSheetRes.data.replies[0].addSheet.properties.sheetId
+
+//       // Define cabeçalhos e formatação (negrito, centralizado)
+//       await sheets.spreadsheets.batchUpdate({
+//         spreadsheetId,
+//         requestBody: {
+//           requests: [
+//             {
+//               updateCells: {
+//                 rows: [
+//                   {
+//                     values: headers.map((text) => ({
+//                       userEnteredValue: { stringValue: text },
+//                       userEnteredFormat: {
+//                         textFormat: { bold: true },
+//                         horizontalAlignment: "CENTER",
+//                       },
+//                     })),
+//                   },
+//                 ],
+//                 fields:
+//                   "userEnteredValue,userEnteredFormat(textFormat,horizontalAlignment)",
+//                 start: {
+//                   sheetId,
+//                   rowIndex: 0,
+//                   columnIndex: 0,
+//                 },
+//               },
+//             },
+//             {
+//               // Centraliza toda a aba (até linha 1000 e colunas A-I)
+//               repeatCell: {
+//                 range: {
+//                   sheetId,
+//                   startRowIndex: 0,
+//                   endRowIndex: 1000,
+//                   startColumnIndex: 0,
+//                   endColumnIndex: 9,
+//                 },
+//                 cell: {
+//                   userEnteredFormat: {
+//                     horizontalAlignment: "CENTER",
+//                   },
+//                 },
+//                 fields: "userEnteredFormat.horizontalAlignment",
+//               },
+//             },
+//             {
+//               // Formata colunas D (3), E (4), F (5), G (6), H (7) como moeda R$
+//               repeatCell: {
+//                 range: {
+//                   sheetId,
+//                   startRowIndex: 1,
+//                   endRowIndex: 1000,
+//                   startColumnIndex: 3,
+//                   endColumnIndex: 8,
+//                 },
+//                 cell: {
+//                   userEnteredFormat: {
+//                     numberFormat: {
+//                       type: "CURRENCY",
+//                       pattern: "R$#,##0.00",
+//                     },
+//                   },
+//                 },
+//                 fields: "userEnteredFormat.numberFormat",
+//               },
+//             },
+//           ],
+//         },
+//       })
+
+//       console.log(
+//         `Aba "${sheetName}" criada com cabeçalhos, alinhamento e formato monetário.`
+//       )
+//     }
+
+//     // Dados da linha
+//     const values = [
+//       [
+//         setData,
+//         horaRange,
+//         d.offer,
+//         d.custo_completo,
+//         d.custo_30min,
+//         d.faturamento,
+//         d.liquido,
+//         d.lucro,
+//         d.conv,
+//       ],
+//     ]
+
+//     await sheets.spreadsheets.values.append({
+//       spreadsheetId,
+//       range: `${sheetName}!A2`,
+//       valueInputOption: "RAW",
+//       requestBody: {
+//         values,
+//       },
+//     })
+
+//     console.log(`Dados adicionados na aba "${sheetName}".`)
+//   }
+// }
+
 async function enviarParaSheets(resultado) {
   const client = await auth.getClient()
   const sheets = google.sheets({ version: "v4", auth: client })
 
-  const spreadsheetId = "1mfu0Tezwxp4A0v1XUKI4tk48HEeK69WKu6MbnQyv0w0" // copie da URL da planilha
-  const range = "Página1!A2:D" // ou o nome da sua aba e intervalo desejado
+  const spreadsheetId = "1mfu0Tezwxp4A0v1XUKI4tk48HEeK69WKu6MbnQyv0w0"
+  const { data: sheetData } = await sheets.spreadsheets.get({ spreadsheetId })
+  const existingSheets = sheetData.sheets.map((s) => s.properties.title)
 
-  const values = completo.map((d) => [
-    setData,
-    horaRange,
-    d.offer,
-    // d.camp,
-    `R$ ${d.custo_completo}`,
-    `R$ ${d.custo_30min.toFixed(2).replace(".", ",")}`,
-    `R$ ${d.liquido.toFixed(2).replace(".", ",")}`,
-    `R$ ${d.lucro.toFixed(2).replace(".", ",")}`,
-    conv,
-  ])
+  const headers = [
+    "Data",
+    "Hora",
+    "Oferta",
+    "Custo_ACM",
+    "Custo_1hr",
+    "Faturamento",
+    "Líquido",
+    "Lucro",
+    "Conversão",
+  ]
 
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range,
-    valueInputOption: "RAW",
-    requestBody: {
-      values,
-    },
-  })
+  for (const [index, d] of completo.entries()) {
+    const sheetName = d.offer
 
-  console.log("Dados inseridos com sucesso!")
+    let sheetId
+    if (!existingSheets.includes(sheetName)) {
+      const addSheetRes = await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              addSheet: {
+                properties: {
+                  title: sheetName,
+                },
+              },
+            },
+          ],
+        },
+      })
+
+      sheetId = addSheetRes.data.replies[0].addSheet.properties.sheetId
+
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              updateCells: {
+                rows: [
+                  {
+                    values: headers.map((text) => ({
+                      userEnteredValue: { stringValue: text },
+                      userEnteredFormat: {
+                        textFormat: { bold: true },
+                        horizontalAlignment: "CENTER",
+                      },
+                    })),
+                  },
+                ],
+                fields:
+                  "userEnteredValue,userEnteredFormat(textFormat,horizontalAlignment)",
+                start: {
+                  sheetId,
+                  rowIndex: 0,
+                  columnIndex: 0,
+                },
+              },
+            },
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: 0,
+                  endRowIndex: 1000,
+                  startColumnIndex: 0,
+                  endColumnIndex: 9,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    horizontalAlignment: "CENTER",
+                  },
+                },
+                fields: "userEnteredFormat.horizontalAlignment",
+              },
+            },
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: 1,
+                  endRowIndex: 1000,
+                  startColumnIndex: 3,
+                  endColumnIndex: 8,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    numberFormat: {
+                      type: "CURRENCY",
+                      pattern: "R$#,##0.00",
+                    },
+                  },
+                },
+                fields: "userEnteredFormat.numberFormat",
+              },
+            },
+          ],
+        },
+      })
+      console.log(`Aba "${sheetName}" criada com formatação.`)
+    } else {
+      const sheet = sheetData.sheets.find(
+        (s) => s.properties.title === sheetName
+      )
+      sheetId = sheet.properties.sheetId
+    }
+
+    const read = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${sheetName}!A:A`,
+    })
+
+    const currentRow = read.data.values ? read.data.values.length + 1 : 2
+
+    const formula =
+      currentRow === 2
+        ? "=D2"
+        : `=SE(ÉNÚM(D${currentRow - 1})=TRUE; (D${currentRow} - D${
+            currentRow - 1
+          }); D${currentRow})`
+
+    const values = [
+      [
+        setData,
+        horaRange,
+        d.offer,
+        d.custo_completo,
+        formula,
+        d.faturamento,
+        d.liquido,
+        d.lucro,
+        d.conv,
+      ],
+    ]
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: `${sheetName}!A${currentRow}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values,
+      },
+    })
+
+    console.log(
+      `Dados adicionados na aba "${sheetName}" na linha ${currentRow}.`
+    )
+  }
 }
 
-const express = require("express")
-const app = express()
-const port = process.env.PORT || 3000
+// all_Camps()
 
-app.get("/", async (req, res) => {
-  try {
-    await all_Camps()
-    res.status(200).json({
-      message: "Sucesso!",
-    })
-  } catch (err) {
-    res.status(500).send("Erro ao processar a requisição")
-  }
-})
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`)
+const cron = require("node-cron")
+
+cron.schedule("0 * * * *", () => {
+  // cron.schedule("* * * * *", () => {
+  // cron.schedule("*/5 * * * *", () => {
+  all_Camps()
+
+  agora = new Date()
+  umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000)
+  horaAtual = setData + "+" + formatHora(agora)
+  horaAnterior = setData + "+" + formatHora(umaHoraAtras)
+  horaRange = formatHora(umaHoraAtras) + "-" + formatHora(agora)
+
+  camps = []
+  fullData = []
+  dados_cart = []
+  completo = []
+  conv = 0
 })
