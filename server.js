@@ -840,24 +840,24 @@ async function enviarParaSheets(resultado) {
   }
 }
 
-all_Camps()
+// all_Camps()
 
-// const cron = require("node-cron")
+const cron = require("node-cron")
 
-// // cron.schedule("0 * * * *", () => {
-// cron.schedule("* * * * *", () => {
-//   // cron.schedule("*/5 * * * *", () => {
-//   all_Camps()
+cron.schedule("0 * * * *", () => {
+  // cron.schedule("* * * * *", () => {
+  // cron.schedule("*/5 * * * *", () => {
+  all_Camps()
 
-//   agora = new Date()
-//   umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000)
-//   horaAtual = setData + "+" + formatHora(agora)
-//   horaAnterior = setData + "+" + formatHora(umaHoraAtras)
-//   horaRange = formatHora(umaHoraAtras) + "-" + formatHora(agora)
+  agora = new Date()
+  umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000)
+  horaAtual = setData + "+" + formatHora(agora)
+  horaAnterior = setData + "+" + formatHora(umaHoraAtras)
+  horaRange = formatHora(umaHoraAtras) + "-" + formatHora(agora)
 
-//   camps = []
-//   fullData = []
-//   dados_cart = []
-//   completo = []
-//   conv = 0
-// })
+  camps = []
+  fullData = []
+  dados_cart = []
+  completo = []
+  conv = 0
+})
