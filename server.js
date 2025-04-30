@@ -847,16 +847,16 @@ async function enviarParaSheets(resultado) {
 
 const cron = require("node-cron")
 
-cron.schedule("0,30 * * * *", () => {
+cron.schedule("0,30 * * * *", async () => {
   // cron.schedule("0 * * * *", () => {
   // cron.schedule("* * * * *", () => {
   // cron.schedule("*/5 * * * *", () => {
-  all_Camps()
+  await all_Camps()
 
   setData = getDataHoje()
 
   agora = new Date()
-  umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000)
+  umaHoraAtras = new Date(agora.getTime() - 30 * 60 * 1000)
   horaAtual = setData + "+" + formatHora(agora)
   horaAnterior = setData + "+" + formatHora(umaHoraAtras)
   horaRange = formatHora(umaHoraAtras) + "-" + formatHora(agora)
