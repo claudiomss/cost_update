@@ -23,7 +23,7 @@ function formatHora(date) {
 }
 
 let agora = new Date()
-let umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000)
+let umaHoraAtras = new Date(agora.getTime() - 30 * 60 * 1000) // Ajuste 1h/ 30min
 
 let horaAtual = setData + "+" + formatHora(agora)
 let horaAnterior = setData + "+" + formatHora(umaHoraAtras)
@@ -37,6 +37,8 @@ const dados = async (pagina) => {
   )
 
   const data = await d.json()
+
+  // console.log(data)
 
   return data // imprime os dados
 }
@@ -112,7 +114,7 @@ const dados2 = async (campaign) => {
 
     data = await response.json()
 
-    // console.log(data.total.cost)
+    console.log(data)
 
     fullData.push({
       data: formattedDate,
@@ -126,7 +128,8 @@ const dados2 = async (campaign) => {
   // console.log("Custo")
   // console.log(fullData)
   // enviarParaSheets()
-  dados_Cartpanda()
+
+  // dados_Cartpanda()
 }
 
 let dados_cart = []
@@ -844,7 +847,8 @@ async function enviarParaSheets(resultado) {
 
 const cron = require("node-cron")
 
-cron.schedule("0 * * * *", () => {
+cron.schedule("0,30 * * * *", () => {
+  // cron.schedule("0 * * * *", () => {
   // cron.schedule("* * * * *", () => {
   // cron.schedule("*/5 * * * *", () => {
   all_Camps()
