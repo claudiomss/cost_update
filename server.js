@@ -14,7 +14,7 @@ function getDataHoje() {
   return formattedDate
 }
 
-const setData = getDataHoje()
+let setData = getDataHoje()
 
 function formatHora(date) {
   const horas = String(date.getHours()).padStart(2, "0")
@@ -848,6 +848,8 @@ cron.schedule("0 * * * *", () => {
   // cron.schedule("* * * * *", () => {
   // cron.schedule("*/5 * * * *", () => {
   all_Camps()
+
+  setData = getDataHoje()
 
   agora = new Date()
   umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000)
