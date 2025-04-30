@@ -121,7 +121,7 @@ const dados2 = async (campaign) => {
       cost: data.total.cost,
     })
 
-    await delay(1200)
+    await delay(3000)
   }
   // console.log("Custo")
   // console.log(fullData)
@@ -298,7 +298,7 @@ const dados_Cartpanda = async (pagina) => {
       conv: oferta.conv,
     })
 
-    await delay(1200)
+    await delay(3000)
   }
 
   // console.log(completo)
