@@ -114,7 +114,7 @@ const dados2 = async (campaign) => {
 
     data = await response.json()
 
-    console.log(data)
+    // console.log(data)
 
     fullData.push({
       data: formattedDate,
@@ -129,7 +129,7 @@ const dados2 = async (campaign) => {
   // console.log(fullData)
   // enviarParaSheets()
 
-  // dados_Cartpanda()
+  dados_Cartpanda()
 }
 
 let dados_cart = []
