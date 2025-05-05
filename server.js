@@ -29,6 +29,21 @@ let horaAtual = setData + "+" + formatHora(agora)
 let horaAnterior = setData + "+" + formatHora(umaHoraAtras)
 let horaRange = formatHora(umaHoraAtras) + "-" + formatHora(agora)
 
+function getOntem() {
+  const today = new Date()
+  today.setDate(today.getDate() - 1) // subtrai 1 dia
+
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, "0")
+  const day = String(today.getDate()).padStart(2, "0")
+
+  const formattedDate = `${year}-${month}-${day}`
+
+  return formattedDate
+}
+
+if (horaRange == "23:30-00:00") setData = getOntem()
+
 let camps = []
 
 const dados = async (pagina) => {
@@ -697,11 +712,12 @@ async function enviarParaSheets(resultado) {
     "Hora",
     "Oferta",
     "Custo_ACM",
-    "Custo_1hr",
+    "Custo_30min",
     "Faturamento",
     "Líquido",
     "Lucro",
     "Conversão",
+    "ROAS",
   ]
 
   for (const [index, d] of completo.entries()) {
@@ -814,6 +830,8 @@ async function enviarParaSheets(resultado) {
             currentRow - 1
           }); D${currentRow})`
 
+    const roas = `=F${currentRow}/E${currentRow}`
+
     const values = [
       [
         setData,
@@ -825,6 +843,7 @@ async function enviarParaSheets(resultado) {
         d.liquido,
         d.lucro,
         d.conv,
+        roas,
       ],
     ]
 
@@ -847,19 +866,21 @@ async function enviarParaSheets(resultado) {
 
 const cron = require("node-cron")
 
-cron.schedule("0,30 * * * *", async () => {
+cron.schedule("0,30 * * * *", () => {
   // cron.schedule("0 * * * *", () => {
   // cron.schedule("* * * * *", () => {
   // cron.schedule("*/5 * * * *", () => {
-  await all_Camps()
+  all_Camps()
 
   setData = getDataHoje()
 
   agora = new Date()
-  umaHoraAtras = new Date(agora.getTime() - 30 * 60 * 1000)
+  umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000)
   horaAtual = setData + "+" + formatHora(agora)
   horaAnterior = setData + "+" + formatHora(umaHoraAtras)
   horaRange = formatHora(umaHoraAtras) + "-" + formatHora(agora)
+
+  if (horaRange == "23:30-00:00") setData = getOntem()
 
   camps = []
   fullData = []
