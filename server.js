@@ -875,7 +875,7 @@ cron.schedule("0,30 * * * *", () => {
   setData = getDataHoje()
 
   agora = new Date()
-  umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000)
+  umaHoraAtras = new Date(agora.getTime() - 30 * 60 * 1000)
   horaAtual = setData + "+" + formatHora(agora)
   horaAnterior = setData + "+" + formatHora(umaHoraAtras)
   horaRange = formatHora(umaHoraAtras) + "-" + formatHora(agora)
